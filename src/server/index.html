@@ -155,7 +155,8 @@
     <noscript>Sorry, your browser can't run this App.</noscript>
     <script>
         window.onload = function () {
-            let ws = new WebSocket('ws://localhost:9001');
+            const serverHost = window.location.host;
+            let ws = new WebSocket(`ws://${serverHost}`);
             const joinChatContainer = document.getElementById('joinChatContainer');
             const joinChatInput = document.getElementById('joinChatInput');
             const joinChatBtn = document.getElementById('joinChatBtn');
@@ -249,7 +250,6 @@
 
             let formsEnabled = false;
             setInterval(function () {
-                console.log('ws.readyState: ', ws.readyState);
                 if (ws.readyState === 0 || ws.readyState === 2 || ws.readyState === 3) {
                     formsEnabled = false;
                     disableChatForm(joinChatInput, joinChatBtn, startChat);

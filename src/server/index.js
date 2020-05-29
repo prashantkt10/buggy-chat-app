@@ -19,13 +19,5 @@ wss.on('connection', function (ws) {
     });
 });
 
-wss.on('close', function (ws) {
-    console.log('Disconnected: ')
-});
-
-wss.on('error', function () {
-    console.error('Error in WebSocket.');
-})
-
-
+wss.on('error', function () { console.error('Error in WebSocket.'); });
 httpServer.listen(process.env.PORT || 9001, function () { console.log('Server listening on port 9001') });
