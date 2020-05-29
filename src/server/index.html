@@ -156,7 +156,7 @@
     <script>
         window.onload = function () {
             const serverHost = window.location.host;
-            let ws = new WebSocket(`ws://${serverHost}`);
+            let ws = new WebSocket(`wss://${serverHost}`);
             const joinChatContainer = document.getElementById('joinChatContainer');
             const joinChatInput = document.getElementById('joinChatInput');
             const joinChatBtn = document.getElementById('joinChatBtn');
