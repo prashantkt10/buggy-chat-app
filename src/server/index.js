@@ -26,4 +26,4 @@ wss.on('close', function (ws) {
 })
 
 
-httpServer.listen(9001, function () { console.log('Server listening on port 9001') });
+httpServer.listen(process.env.PORT, function () { console.log('Server listening on port 9001') });
