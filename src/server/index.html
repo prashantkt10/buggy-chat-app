@@ -155,8 +155,9 @@
     <noscript>Sorry, your browser can't run this App.</noscript>
     <script>
         window.onload = function () {
-            const serverHost = window.location.host;
-            let ws = new WebSocket(`wss://${serverHost}`);
+            const serverHost = window.location.hostname,
+                serverPort = window.location.port;
+            let ws = new WebSocket(`wss://${serverHost}:443`);
             const joinChatContainer = document.getElementById('joinChatContainer');
             const joinChatInput = document.getElementById('joinChatInput');
             const joinChatBtn = document.getElementById('joinChatBtn');
@@ -236,7 +237,7 @@
             }
 
             const connectToWSServer = function () {
-                ws = new WebSocket('ws://localhost:9001');
+                ws = new WebSocket(`wss://${serverHost}:443`);
                 ws.onerror = function () {
                     ws.close();
                 }

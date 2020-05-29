@@ -1,9 +1,11 @@
-const https = require('https'), ws = require('ws'), fs = require('fs'), path = require('path');
+const https = require('https'), http = require('http'), ws = require('ws'), fs = require('fs'), path = require('path');
 
 const httpsServer = https.createServer({
     cert: fs.readFileSync(path.resolve(__dirname, 'cert.pem')),
     key: fs.readFileSync(path.resolve(__dirname, 'key.pem'))
-}, function (req, res) {
+});
+
+const httpServer = http.createServer(function (req, res) {
     fs.readFile(path.resolve(__dirname, 'index.html'), function (err, data) {
         if (err) return res.end('Server error.');
         res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -23,4 +25,5 @@ wss.on('connection', function (ws) {
 });
 
 wss.on('error', function () { console.error('Error in WebSocket.'); });
-httpsServer.listen(process.env.PORT, function () { console.log('Server listening on port 9001') });
+httpsServer.listen(443, function () { console.log('WSS Server listening on port 443...') });
+httpServer.listen(9001, function () { console.log('Web page running on 80...'); });
