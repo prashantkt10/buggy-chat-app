@@ -26,4 +26,4 @@ wss.on('connection', function (ws) {
 
 wss.on('error', function () { console.error('Error in WebSocket.'); });
 httpsServer.listen(443, function () { console.log('WSS Server listening on port 443...') });
-httpServer.listen(9001, function () { console.log('Web page running on 80...'); });
+httpServer.listen(process.env.PORT, function () { console.log('Web page running on 80...'); });
