@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <!-- <script src="script.js"></script> -->
+    <title>Native WS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            box-sizing: border-box;
+        }
+
+        #joinChatContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 0.5px solid lightgray;
+            height: 17rem;
+            width: 20rem;
+            display: flex;
+            justify-content: space-around;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 1px;
+            padding: 35px;
+        }
+
+        #joinChatHeader {
+            width: 100%;
+        }
+
+        #joinChatHeaderText {
+            text-align: center;
+            font-weight: 300;
+        }
+
+        .chatInput {
+            height: 20px;
+            width: 161px;
+            padding: 15px;
+            border-radius: 10px;
+            border-width: thin;
+            border-color: lightgray;
+            width: 98%;
+        }
+
+        .joinChatBtn {
+            text-align: center;
+            color: white;
+            background: #5cb85c;
+            cursor: pointer;
+            padding: 5px;
+            width: 100px;
+            border-radius: 10px;
+        }
+
+        #errorMessageText {
+            display: none;
+            color: red;
+            position: absolute;
+            top: 35rem;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #liveChatContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 0.5px solid lightgray;
+            width: 500px;
+            height: 400px;
+            display: none;
+            border-radius: 1px;
+            padding: 35px;
+        }
+
+        #newChatContainer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #newChatText {
+            width: 75%;
+            display: inline-block;
+        }
+
+        #sendChatBtn {
+            display: inline-block;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        .chatText {
+            border: 1px solid gainsboro;
+            padding: 10px;
+            border-radius: 5px;
+            width: 55%;
+            height: auto;
+            position: absolute;
+            color: slategray;
+        }
+
+        .chatFrom {
+            font-weight: 100;
+            font-size: 10px;
+            position: absolute;
+            left: 17rem;
+            top: 5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="joinChatContainer">
+        <div id="joinChatHeader">
+            <h3 id="joinChatHeaderText">Buggy Chat</h3>
+        </div>
+        <input type="text" name="userName" class="chatInput" id="joinChatInput" autocomplete="off"
+            placeholder="Enter Username">
+        <div class="joinChatBtn" id="joinChatBtn">
+            <p>Join</p>
+        </div>
+    </div>
+    <div id="liveChatContainer">
+        <div id="chatMessages" style="height: 90%;">
+            <ul id="msgList">
+
+            </ul>
+        </div>
+        <div style="position: relative; height: 10%;">
+            <div id="newChatContainer">
+                <div id="newChatText">
+                    <input type="text" name="newChatText" class="chatInput" id="newChatInput"
+                        placeholder="Type your message...">
+                </div>
+                <div class="joinChatBtn" id="sendChatBtn">
+                    <p>Send</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="errorMessageText">Error</div>
+    <noscript>Sorry, your browser can't run this App.</noscript>
+    <script>
+        window.onload = function () {
+            let ws = new WebSocket('ws://localhost:9001');
+            const joinChatContainer = document.getElementById('joinChatContainer');
+            const joinChatInput = document.getElementById('joinChatInput');
+            const joinChatBtn = document.getElementById('joinChatBtn');
+            const errorMessageText = document.getElementById('errorMessageText');
+            const liveChatContainer = document.getElementById('liveChatContainer');
+            const newChatInput = document.getElementById('newChatInput');
+            const sendChatBtn = document.getElementById('sendChatBtn');
+            const msgList = document.getElementById('msgList');
+
+            const disableChatForm = function (txtInput, btn, handleBtn) {
+                txtInput.disabled = true;
+                btn.style.cursor = 'not-allowed';
+                btn.removeEventListener('click', handleBtn);
+                errorMessageText.style.color = 'red';
+                errorMessageText.innerText = 'Connecting with server...';
+                errorMessageText.style.display = 'block';
+                return;
+            }
+
+            const enableChatForm = function (txtInput, btn, handleBtn) {
+                txtInput.disabled = false;
+                btn.style.cursor = 'pointer';
+                btn.addEventListener('click', handleBtn);
+                errorMessageText.style.color = 'green';
+                errorMessageText.innerText = 'Server connected.';
+                errorMessageText.style.display = 'block';
+                return;
+            }
+
+            const moveDownErrMsg = function () {
+                errorMessageText.style.top = '83%';
+                return;
+            }
+
+            const moveUpErrMsg = function () {
+                errorMessageText.style.top = '70%';
+                return;
+            }
+
+            const showSendChatContainer = function () {
+                liveChatContainer.style.display = 'block';
+                joinChatContainer.style.display = 'none';
+                moveDownErrMsg();
+                return;
+            }
+
+            const setUserName = function (userName) {
+                if (!userName || userName.length < 3) return;
+                localStorage.setItem('buggyUser', userName);
+                return;
+            }
+
+            const getUserName = function (key) {
+                if (!key) return;
+                return localStorage.getItem(key);
+            }
+
+            const startChat = function () {
+                if (!joinChatInput.value || joinChatInput.value.length < 3) return;
+                showSendChatContainer();
+                setUserName(joinChatInput.value);
+                return;
+            }
+
+            const sendMessage = function () {
+                if (!newChatInput.value || newChatInput.value.length < 2 || !getUserName('buggyUser')) return;
+                const chatMessage = { 'from': getUserName('buggyUser'), 'message': newChatInput.value };
+                ws.send(JSON.stringify(chatMessage));
+            }
+            let uniqueColor = "#" + ((1 << 24) * Math.random() | 0).toString(16);
+            const addMessageToList = function (msg) {
+                if (!msg) return;
+                let p = document.createElement('p');
+                p.innerHTML = `<p><b style="color:${uniqueColor}">${msg.from}: </b>${msg.message}<p>`;
+                let msgList = document.getElementById('msgList');
+                msgList.appendChild(p);
+            }
+
+            const connectToWSServer = function () {
+                ws = new WebSocket('ws://localhost:9001');
+                ws.onerror = function () {
+                    ws.close();
+                }
+                return;
+            }
+
+            ws.onmessage = function (msg) {
+                addMessageToList(JSON.parse(msg.data));
+            }
+
+
+            let formsEnabled = false;
+            setInterval(function () {
+                console.log('ws.readyState: ', ws.readyState);
+                if (ws.readyState === 0 || ws.readyState === 2 || ws.readyState === 3) {
+                    formsEnabled = false;
+                    disableChatForm(joinChatInput, joinChatBtn, startChat);
+                    disableChatForm(newChatInput, sendChatBtn, sendMessage);
+                    connectToWSServer();
+                    return;
+                }
+                if (!formsEnabled) {
+                    formsEnabled = true;
+                    enableChatForm(joinChatInput, joinChatBtn, startChat);
+                    enableChatForm(newChatInput, sendChatBtn, sendMessage);
+                    return;
+                }
+                return;
+            }, 1000);
+
+
+            if (getUserName('buggyUser')) showSendChatContainer();
+            disableChatForm(joinChatInput, joinChatBtn, startChat);
+            disableChatForm(newChatInput, sendChatBtn, sendMessage);
+        }
+    </script>
+</body>
+
+</html>
