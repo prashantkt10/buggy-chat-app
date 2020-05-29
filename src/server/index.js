@@ -1,21 +1,19 @@
-const http = require('http'), ws = require('ws'), fs = require('fs');
+const http = require('http'), ws = require('ws'), fs = require('fs'), path = require('path');
 
 const httpServer = http.createServer(function (req, res) {
-    fs.readFile('index.html', function (err, data) {
-        if (err) res.end('Server error.');
+    fs.readFile(path.resolve(__dirname, 'index.html'), function (err, data) {
+        if (err) return res.end('Server error.');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write(data);
-        res.end();
+        return res.end();
     });
 });
 
 const wss = new ws.Server({ server: httpServer });
 
 wss.on('connection', function (ws) {
-    console.log('clients: ', wss.clients.size);
     ws.on('message', function (data) {
         wss.clients.forEach((client) => {
-            console.log('incoming msg: ', data.data);
             client.send(data);
         });
     });
@@ -23,7 +21,11 @@ wss.on('connection', function (ws) {
 
 wss.on('close', function (ws) {
     console.log('Disconnected: ')
+});
+
+wss.on('error', function () {
+    console.error('Error in WebSocket.');
 })
 
 
-httpServer.listen(process.env.PORT, function () { console.log('Server listening on port 9001') });
+httpServer.listen(process.env.PORT || 9001, function () { console.log('Server listening on port 9001') });
